@@ -1342,7 +1342,7 @@ end
 --
 -- table -> N/A
 -- No return. Takes text under cursor by normal yi, and if this is an image path, show it in a picker
--- Move to utils/files.lua? Probably keep with find_files_sorted
+-- USER FACING, leave in place
 local function PreviewImg(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1402,6 +1402,7 @@ end
 --
 -- table -> N/A
 -- No return. Opens a picker filtering to only media for users to browse
+-- USER FACING, leave in place
 local function BrowseImg(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1443,6 +1444,9 @@ end
 --
 -- Find notes also linking to the link under cursor
 --
+-- table -> N/A
+-- No return. Opens a picker filtering to only notes linking to the note linked under the cursor
+-- USER FACING, leave in place
 local function FindFriends(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1455,6 +1459,7 @@ local function FindFriends(opts)
             return
         end
 
+        -- Back up register "0, yank and save link under cursor, and restore "0
         local saved_reg = vim.fn.getreg('"0')
         vim.cmd("normal yi]")
         local title = vim.fn.getreg('"0')
@@ -1488,6 +1493,8 @@ end
 --
 -- Create and yank a [[link]] from the current note.
 --
+-- N/A -> N/A, puts link to current note in unnamed register ""
+-- USER FACING, leace in place
 local function YankLink()
     local title = "[["
         .. Pinfo:new({ filepath = vim.fn.expand("%:p"), config.options }).title
@@ -1496,6 +1503,9 @@ local function YankLink()
     print("yanked " .. title)
 end
 
+-- string, string -> N/A
+-- No return. Update links with name change if configured to
+-- Move to utils/files.lua
 local function rename_update_links(oldfile, newname)
     if config.options.rename_update_links == true then
         -- Only look for the first part of the link, so we do not touch to #heading or #^paragraph
@@ -1527,6 +1537,8 @@ end
 --
 -- Prompt for new note title, rename the note and update all links.
 --
+-- N/A -> N/A
+-- USER FACING, leave in place
 local function RenameNote()
     local oldfile =
         Pinfo:new({ filepath = vim.fn.expand("%:p"), config.options })
@@ -1601,6 +1613,8 @@ end
 --
 -- find note for date and create it if necessary.
 --
+-- table -> N/A
+-- Move to utils/files.lua?
 local function GotoDate(opts)
     opts.dates = dateutils.calculate_dates(
         opts.date_table,
@@ -1687,6 +1701,8 @@ end
 --
 -- find today's daily note and create it if necessary.
 --
+-- table -> N/A
+-- USER FACING, leave in place
 local function GotoToday(opts)
     opts = opts or {}
 
@@ -1709,6 +1725,8 @@ end
 --
 -- Select from notes
 --
+-- table -> N/A
+-- USER FACING, leave in place
 local function FindNotes(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1765,6 +1783,8 @@ end
 --
 -- Insert link to image / media, with optional preview
 --
+-- table -> N/A
+-- USER FACING, leave in place
 local function InsertImgLink(opts)
     opts = opts or {}
 
@@ -1809,6 +1829,8 @@ end
 --
 -- find the file linked to by the word under the cursor
 --
+-- table -> N/A
+-- USER FACING, leave in place
 local function SearchNotes(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1847,6 +1869,8 @@ end
 --
 -- Find all notes linking to this one
 --
+-- table -> N/A
+-- USER FACING, leave in place
 local function ShowBacklinks(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1893,7 +1917,8 @@ end
 --
 -- Prompts for title, then pops up telescope for template selection,
 -- creates the new note by template and opens it
-
+-- table, string -> N/A
+-- Move? Used by CreateNoteSelectTemplate and FollowLink
 local function on_create_with_template(opts, title)
     if title == nil then
         return
@@ -1955,6 +1980,9 @@ local function on_create_with_template(opts, title)
     })
 end
 
+-- table -> N/A
+-- No return, select template and create new note
+-- USER FACING, leave in place
 local function CreateNoteSelectTemplate(opts)
     opts = opts or {}
 
@@ -1982,6 +2010,8 @@ end
 --
 -- Prompts for title and creates note with default template
 --
+-- table, string -> N/A
+-- Move? Used in CreateNote and picker_actions.create_new
 local function on_create(opts, title)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -2043,6 +2073,8 @@ local function on_create(opts, title)
     picker()
 end
 
+-- table -> N/A
+-- USER FACING, leave in place
 local function CreateNote(opts)
     opts = opts or {}
 
@@ -2074,6 +2106,8 @@ end
 --
 -- find the file linked to by the word under the cursor
 --
+-- table -> N/A
+-- USER FACING, leave in place
 local function FollowLink(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -2533,6 +2567,8 @@ end
 --
 -- find this week's weekly note and create it if necessary.
 --
+-- table -> N/A
+-- USER FACING, leave in place
 local function GotoThisWeek(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -2617,6 +2653,8 @@ end
 -- --------------
 
 -- return if a daily 'note exists' indicator (sign) should be displayed for a particular day
+-- number, number, number -> number (0 or 1)
+-- USER FACING, Leave in place
 local function CalendarSignDay(day, month, year)
     local fn = config.options.dailies
         .. "/"
@@ -2630,6 +2668,8 @@ end
 
 -- action on enter on a specific day:
 -- preview in telescope, stay in calendar on cancel, open note in other window on accept
+-- number, number, number, _, _ -> N/A
+-- USER FACING, leave in place
 local function CalendarAction(day, month, year, _, _)
     local opts = {}
     opts.date = string.format("%04d-%02d-%02d", year, month, day)
@@ -2638,6 +2678,8 @@ local function CalendarAction(day, month, year, _, _)
     GotoDate(opts)
 end
 
+-- table -> N/A
+-- USER FACING, leave in place
 local function ShowCalendar(opts)
     local defaults = {}
     defaults.cmd = "CalendarVR"
@@ -2656,6 +2698,9 @@ local function ShowCalendar(opts)
 end
 
 -- set up calendar integration: forward to our lua functions
+-- table -> N/A
+-- No return, uses vim commands to set up the calendar
+-- Move to config.lua?
 local function SetupCalendar(opts)
     local defaults = config.options.calendar_opts
     opts = opts or defaults
@@ -2697,6 +2742,9 @@ local function SetupCalendar(opts)
     end
 end
 
+-- table -> N/A
+-- No return. Toggles todo status under the cursor
+-- USER FACING, leave in place
 local function ToggleTodo(opts)
     -- replace
     --       by -
@@ -2755,6 +2803,8 @@ local function ToggleTodo(opts)
     end
 end
 
+-- table -> N/A
+-- USER FACING, leave in place
 local function FindAllTags(opts)
     opts = opts or {}
     local i = opts.i
@@ -2857,6 +2907,8 @@ end
 --
 -- Overrides config with elements from cfg. See top of file for defaults.
 --
+-- table -> N/A
+-- Maybe fold into _setup? Also used in chdir, though...
 local function Setup(cfg)
     cfg = cfg or {}
 
@@ -2955,6 +3007,8 @@ local function Setup(cfg)
     config.options.media_extensions = config.options.media_extensions
 end
 
+-- table -> N/A
+-- USER FACING, leave in place
 local function _setup(cfg)
     if cfg.vaults ~= nil and cfg.default_vault ~= nil then
         M.vaults = cfg.vaults
@@ -2972,14 +3026,19 @@ local function _setup(cfg)
     end
 end
 
+-- table -> N/A
+-- USER FACING, leave in place
 local function ChangeVault(opts)
     tkpickers.vaults(M, opts)
 end
 
+-- table -> N/A
+-- USER FACING, leave in place
 local function chdir(cfg)
     Setup(cfg)
 end
 
+-- Define all user facing functions
 M.find_notes = FindNotes
 M.find_daily_notes = FindDailyNotes
 M.search_notes = SearchNotes
@@ -3009,6 +3068,7 @@ M.switch_vault = ChangeVault
 M.chdir = chdir
 
 -- Telekasten command, completion
+-- Move above definition of user facing functions just above
 local TelekastenCmd = {
     commands = function()
         return {
@@ -3051,6 +3111,8 @@ local TelekastenCmd = {
     end,
 }
 
+-- string -> N/A
+-- Keep with TelekastenCmd just above
 TelekastenCmd.command = function(subcommand)
     local show = function(opts)
         opts = opts or {}
@@ -3107,6 +3169,9 @@ TelekastenCmd.command = function(subcommand)
         show(theme)
     end
 end
+
+-- table -> function
+-- Keep with other picker_actions
 function picker_actions.create_new(opts)
     opts = opts or {}
     opts.subdirs_in_links = opts.subdirs_in_links
@@ -3121,6 +3186,8 @@ function picker_actions.create_new(opts)
 end
 
 -- nvim completion function for completing :Telekasten sub-commands
+-- N/A -> [string]
+-- Keep with TelekastenCmd above
 TelekastenCmd.complete = function()
     local candidates = {}
     for k, v in pairs(TelekastenCmd.commands()) do
