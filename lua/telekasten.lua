@@ -1066,6 +1066,9 @@ end
 --
 -- Select from daily notes
 --
+-- table -> N/A
+-- No return. Opens a picker looking for daily notes, creating new from template if needed
+-- Move to utils/files.lua? Arguably file related
 local function FindDailyNotes(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1073,6 +1076,9 @@ local function FindDailyNotes(opts)
     opts.close_after_yanking = opts.close_after_yanking
         or config.options.close_after_yanking
 
+    -- If global dir check passes, defines a picker for daily files
+    -- If today's daily doesn't exist, create one from template
+    -- Either way, then open the picker
     fileutils.global_dir_check(function(dir_check)
         if not dir_check then
             return
@@ -1137,6 +1143,9 @@ end
 --
 -- Select from daily notes
 --
+-- table -> N/A
+-- No return. Defines a picker looking for weekly notes, creating a new one from template if needed
+-- Move to utils/files.lua? Arguably file related. Keep with FindDailyNotes either way.
 local function FindWeeklyNotes(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1144,6 +1153,9 @@ local function FindWeeklyNotes(opts)
     opts.close_after_yanking = opts.close_after_yanking
         or config.options.close_after_yanking
 
+    -- If global dir check passes, set up a picker for weekly notes
+    -- If this week's note does not exist, create from template
+    -- Either way, then call the picker
     fileutils.global_dir_check(function(dir_check)
         if not dir_check then
             return
@@ -1209,7 +1221,8 @@ end
 -- -----------
 --
 -- Select from all notes and put a link in the current buffer
---
+-- table -> N/A
+-- No return. Sets up a picker from which users can pick a note to insert a link to
 local function InsertLink(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1219,6 +1232,7 @@ local function InsertLink(opts)
     opts.subdirs_in_links = opts.subdirs_in_links
         or config.options.subdirs_in_links
 
+    -- If global dir check passes, set up a picker for picking a note
     fileutils.global_dir_check(function(dir_check)
         if not dir_check then
             return
@@ -1257,6 +1271,7 @@ local function InsertLink(opts)
             return true
         end
 
+        -- Open picker for users to chose note, preferring live grep
         if opts.with_live_grep then
             builtin.live_grep({
                 prompt_title = "Insert link to note with live grep",
@@ -1277,13 +1292,19 @@ local function InsertLink(opts)
     end)
 end
 
--- local function check_for_link_or_tag()
+-- N/A -> string, number
+-- Returns "tag"/"link"/nil, location's column
+-- Checks if the location under the cursor is a tag or link
+-- Move to utils/links.lua?
 local function check_for_link_or_tag()
     local line = vim.api.nvim_get_current_line()
     local col = vim.fn.col(".")
     return taglinks.is_tag_or_link_at(line, col, config.options)
 end
 
+-- string -> N/A
+-- No return. Passes the given URL to the OS's tool for handling and opening URLs
+-- Move to utils/links.lua?
 local function follow_url(url)
     if config.options.follow_url_fallback then
         local cmd =
@@ -1300,6 +1321,7 @@ local function follow_url(url)
             .. '"], {"detach": v:true})'
     end
 
+    -- Choose OS-appropriate command and run it if possible
     local command
     if vim.fn.has("mac") == 1 then
         command = format_command("open")
@@ -1308,7 +1330,7 @@ local function follow_url(url)
         command = format_command("xdg-open")
         vim.cmd(command)
     else
-        print("Cannot open URLs on your operating system")
+        print("Cannot open URLs on your operating system") -- TODO: Figure out how to do this on Windows
     end
 end
 
@@ -1318,6 +1340,9 @@ end
 --
 -- preview media
 --
+-- table -> N/A
+-- No return. Takes text under cursor by normal yi, and if this is an image path, show it in a picker
+-- Move to utils/files.lua? Probably keep with find_files_sorted
 local function PreviewImg(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
@@ -1325,6 +1350,8 @@ local function PreviewImg(opts)
     opts.close_after_yanking = opts.close_after_yanking
         or config.options.close_after_yanking
 
+    -- If global dir check passes, then back up the current register "0 and yank what's under the cursor
+    -- If the yanked text is a file name for a local image, present the preview in a picker
     fileutils.global_dir_check(function(dir_check)
         if not dir_check then
             return
@@ -1373,6 +1400,8 @@ end
 --
 -- preview media
 --
+-- table -> N/A
+-- No return. Opens a picker filtering to only media for users to browse
 local function BrowseImg(opts)
     opts = opts or {}
     opts.insert_after_inserting = opts.insert_after_inserting
