@@ -59,6 +59,7 @@ local function get_defaults(home)
         weeklies_create_nonexisting = true,
         journal_auto_open = false,
         image_link_style = "markdown",
+        note_link_style = "wiki",
         sort = "filename",
         subdirs_in_links = true,
         plug_into_calendar = true,
